@@ -31,7 +31,7 @@ resource "aws_vpc" "workshopvpc" {
 
 //create Internet Gateway
 resource "aws_internet_gateway" "igwWorkshop" {
-  vpc_id = "${aws_vpc.workshopvpc.id}"
+  vpc_id = aws_vpc.workshopvpc.id
 
   tags = {
     Name = "igwWorkshop"
@@ -40,7 +40,7 @@ resource "aws_internet_gateway" "igwWorkshop" {
 
 //create public Subnet
 resource "aws_subnet" "workshopPublicSubnet" {
-  vpc_id     = "${aws_vpc.workshopvpc.id}"
+  vpc_id     = aws_vpc.workshopvpc.id
   cidr_block = "20.0.1.0/24"
   map_public_ip_on_launch = "true"
   availability_zone = "eu-west-1"
@@ -51,7 +51,7 @@ resource "aws_subnet" "workshopPublicSubnet" {
 
 //create public Subnet for RDS
 resource "aws_subnet" "workshopPublicSubnet2" {
-  vpc_id     = "${aws_vpc.workshopvpc.id}"
+  vpc_id     = aws_vpc.workshopvpc.id
   cidr_block = "20.0.2.0/24"
   map_public_ip_on_launch = "true"
   availability_zone = "eu-west-1"
@@ -62,11 +62,11 @@ resource "aws_subnet" "workshopPublicSubnet2" {
 
 //create Route Table with allocation to Internet Gateway
 resource "aws_route_table" "routeTableWorkshop" {
-  vpc_id = "${aws_vpc.workshopvpc.id}"
+  vpc_id = aws_vpc.workshopvpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = "${aws_internet_gateway.igwWorkshop.id}"
+    gateway_id = aws_internet_gateway.igwWorkshop.id
   }
 
   tags = {
@@ -76,20 +76,20 @@ resource "aws_route_table" "routeTableWorkshop" {
 
 //create association RouteTable to Subnet
 resource "aws_route_table_association" "aRouteTableSubnet" {
-  subnet_id      = "${aws_subnet.workshopPublicSubnet.id}"
-  route_table_id = "${aws_route_table.routeTableWorkshop.id}"
+  subnet_id      = aws_subnet.workshopPublicSubnet.id
+  route_table_id = aws_route_table.routeTableWorkshop.id
 }
 
 resource "aws_route_table_association" "aRouteTableSubnet2" {
-  subnet_id      = "${aws_subnet.workshopPublicSubnet2.id}"
-  route_table_id = "${aws_route_table.routeTableWorkshop.id}"
+  subnet_id      = aws_subnet.workshopPublicSubnet2.id
+  route_table_id = aws_route_table.routeTableWorkshop.id
 }
 
 //create Security Group Web + SSH
 resource "aws_security_group" "secGroupWorkshopWebSSH" {
   name        = "secGroupWorkshopWebSSH"
   description = "Allow TLS inbound traffic"
-  vpc_id      = "${aws_vpc.workshopvpc.id}"
+  vpc_id      = aws_vpc.workshopvpc.id
   
   ingress {
     # TLS (change to whatever ports you need)
@@ -137,7 +137,7 @@ resource "aws_security_group" "secGroupWorkshopWebSSH" {
 resource "aws_security_group" "secGroupWorkshopMYSQL" {
   name        = "secGroupWorkshopMYSQL"
   description = "Allow TLS inbound traffic"
-  vpc_id      = "${aws_vpc.workshopvpc.id}"
+  vpc_id      = aws_vpc.workshopvpc.id
   
   ingress {
     # TLS (change to whatever ports you need)
@@ -146,7 +146,7 @@ resource "aws_security_group" "secGroupWorkshopMYSQL" {
     protocol    = "tcp"
     # Please restrict your ingress to only necessary IPs and ports.
     # Opening to 0.0.0.0/0 can lead to security vulnerabilities.
-    security_groups = ["${aws_security_group.secGroupWorkshopWebSSH.id}"]
+    security_groups = [aws_security_group.secGroupWorkshopWebSSH.id]
   }
 
   egress {
@@ -208,11 +208,11 @@ resource "aws_instance" "ec2WorkshopWebApp" {
     //aws EC2 instance type, t2.micro for free tier
   instance_type                 = "t2.micro"
   key_name                      = "testkeypair"
-  subnet_id                     = "${aws_subnet.workshopPublicSubnet.id}"
-  vpc_security_group_ids        = ["${aws_security_group.secGroupWorkshopWebSSH.id}"]
+  subnet_id                     = aws_subnet.workshopPublicSubnet.id
+  vpc_security_group_ids        = [aws_security_group.secGroupWorkshopWebSSH.id]
   //user_data_base64            = "${base64encode(var.userdataEC2)}"
-  user_data                     = "${var.userdataEC2}"
-  iam_instance_profile          =  "${aws_iam_instance_profile.instanceProfileWorkshop.name}"
+  user_data                     = var.userdataEC2
+  iam_instance_profile          =  aws_iam_instance_profile.instanceProfileWorkshop.name
   tags = {
     Name = "ec2WorkshopWebApp"
   }
@@ -226,11 +226,11 @@ resource "aws_instance" "ec2WorkshopWebApp2" {
     //aws EC2 instance type, t2.micro for free tier
   instance_type                 = "t2.micro"
   key_name                      = "testkeypair"
-  subnet_id                     = "${aws_subnet.workshopPublicSubnet.id}"
-  vpc_security_group_ids        = ["${aws_security_group.secGroupWorkshopWebSSH.id}"]
+  subnet_id                     = aws_subnet.workshopPublicSubnet.id
+  vpc_security_group_ids        = [aws_security_group.secGroupWorkshopWebSSH.id]
   //user_data_base64            = "${base64encode(var.userdataEC2)}"
-  user_data                     = "${var.userdataEC2}"
-  iam_instance_profile          =  "${aws_iam_instance_profile.instanceProfileWorkshop.name}"
+  user_data                     = var.userdataEC2
+  iam_instance_profile          =  aws_iam_instance_profile.instanceProfileWorkshop.name
   tags = {
     Name = "ec2WorkshopWebApp2"
   }
@@ -240,7 +240,7 @@ resource "aws_instance" "ec2WorkshopWebApp2" {
 // create DB Subnet Group -- Subnet1+Subnet2
 resource "aws_db_subnet_group" "dbSubnetGroupWorkshop" {
   name       = "dbsubnetgroupworkshop"
-  subnet_ids = ["${aws_subnet.workshopPublicSubnet.id}","${aws_subnet.workshopPublicSubnet2.id}"]
+  subnet_ids = [aws_subnet.workshopPublicSubnet.id,aws_subnet.workshopPublicSubnet2.id]
 
   tags = {
     Name = "dbSubnetGroupWorkshop"
@@ -257,8 +257,8 @@ resource "aws_db_instance" "rdsWorkshop" {
   name                      = "rdsWorkshop"
   username                  = "alevz"
   password                  = "Passw0rdDB"
-  vpc_security_group_ids    = ["${aws_security_group.secGroupWorkshopMYSQL.id}"]
-  db_subnet_group_name      = "${aws_db_subnet_group.dbSubnetGroupWorkshop.tags.Name}"
+  vpc_security_group_ids    = [aws_security_group.secGroupWorkshopMYSQL.id]
+  db_subnet_group_name      = aws_db_subnet_group.dbSubnetGroupWorkshop.tags.Name
   parameter_group_name      = "default.mysql5.7"
   //backup_retention_period   = 1
   //snapshot_identifier = "some-snap"
@@ -287,15 +287,15 @@ resource "aws_db_instance" "rdsWorkshop" {
 # }
 
 output "ip" {
-  value = "${aws_instance.ec2WorkshopWebApp.public_ip}"
+  value = aws_instance.ec2WorkshopWebApp.public_ip
 }
 
 output "ip2" {
-  value = "${aws_instance.ec2WorkshopWebApp2.public_ip}"
+  value = aws_instance.ec2WorkshopWebApp2.public_ip
 }
 
 output "ipDB"{
-    value = "${aws_db_instance.rdsWorkshop.address}"
+    value = aws_db_instance.rdsWorkshop.address
 }
 
 # output "ipDBReplica"{
@@ -303,13 +303,13 @@ output "ipDB"{
 # }
 
 output "dns"{
-  value = "${aws_instance.ec2WorkshopWebApp.public_dns}"
+  value = aws_instance.ec2WorkshopWebApp.public_dns
 }
 
 output "dns2"{
-  value = "${aws_instance.ec2WorkshopWebApp2.public_dns}"
+  value = aws_instance.ec2WorkshopWebApp2.public_dns
 }
 
 output "userData"{
-    value = "${var.userdataEC2}"
+    value = var.userdataEC2
 }
