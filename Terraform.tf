@@ -10,9 +10,9 @@ provider "aws" {
 //create s3 tfstate location cl
 terraform {
   backend "s3"{
-    bucket         = "terraform-bucket-sonic0"
+    bucket         = "terraform-bucket-sonic0" # Change it based on your preferences
     region         = "eu-west-1"
-    key            = "terraform-state"
+    key            = "terraform-state/terraform.tfstate" # Change it based on your preferences
     dynamodb_table = "terraform_state_lock"
     profile        = "personalAWS"
   }
@@ -38,12 +38,15 @@ resource "aws_internet_gateway" "igwWorkshop" {
   }
 }
 
+// The two subnet must be split across multiple Availability Zones within the same region.
+// https://github.com/terraform-providers/terraform-provider-aws/issues/3223
+
 //create public Subnet
 resource "aws_subnet" "workshopPublicSubnet" {
   vpc_id     = aws_vpc.workshopvpc.id
   cidr_block = "20.0.1.0/24"
   map_public_ip_on_launch = "true"
-  availability_zone = "eu-west-1"
+  availability_zone = "eu-west-1a"
   tags = {
     Name = "workshopPublicSubnet"
   }
@@ -54,7 +57,7 @@ resource "aws_subnet" "workshopPublicSubnet2" {
   vpc_id     = aws_vpc.workshopvpc.id
   cidr_block = "20.0.2.0/24"
   map_public_ip_on_launch = "true"
-  availability_zone = "eu-west-1"
+  availability_zone = "eu-west-1b"
   tags = {
     Name = "workshopPublicSubnet2"
   }
@@ -181,12 +184,12 @@ resource "aws_security_group" "secGroupWorkshopMYSQL" {
 
 resource "aws_iam_instance_profile" "instanceProfileWorkshop" {
   name = "instanceProfileWorkshop"
-  role = "Inventory-App-Role"
+  role = "Inventory-App-Role" # You Must create a role in your AWS account
 }
 
 //create EC2-ec2WorkshopWebApp user data local variable
 variable "userdataEC2" {
-    type = "string"
+    type = string
     default  = <<-EOF
                 #!/bin/bash
                 yum install -y httpd mysql 
@@ -203,11 +206,11 @@ variable "userdataEC2" {
 //create EC2 Apps
 resource "aws_instance" "ec2WorkshopWebApp" {
     //aws AMI selection -- Amazon Linux 2
-  ami           = "ami-0602ae7e6b9191aea"
+  ami           = "ami-099a8245f5daa82bf"
 
     //aws EC2 instance type, t2.micro for free tier
   instance_type                 = "t2.micro"
-  key_name                      = "testkeypair"
+  key_name                      = "testkeypair" # You must create this key pairs on your AWS
   subnet_id                     = aws_subnet.workshopPublicSubnet.id
   vpc_security_group_ids        = [aws_security_group.secGroupWorkshopWebSSH.id]
   //user_data_base64            = "${base64encode(var.userdataEC2)}"
@@ -221,7 +224,7 @@ resource "aws_instance" "ec2WorkshopWebApp" {
 
 resource "aws_instance" "ec2WorkshopWebApp2" {
     //aws AMI selection -- Amazon Linux 2
-  ami           = "ami-0602ae7e6b9191aea"
+  ami           = "ami-099a8245f5daa82bf"
 
     //aws EC2 instance type, t2.micro for free tier
   instance_type                 = "t2.micro"
