@@ -1,19 +1,20 @@
 //create AWS provider 
 provider "aws" {
     //aws profile defined in aws cli
-  profile    = "amplifyAdmin-1"
+  profile    = "personalAWS"
 
     //aws region selection
-  region     = "ap-southeast-1"
+  region     = "eu-west-1"
 }
 
 //create s3 tfstate location cl
 terraform {
   backend "s3"{
-    bucket         = "terraform-bucket-alevz"
-    region         = "ap-southeast-1"
-    key            = "terraform-state/terraform.tfstate"
+    bucket         = "terraform-bucket-sonic0"
+    region         = "eu-west-1"
+    key            = "terraform-state"
     dynamodb_table = "terraform_state_lock"
+    profile        = "personalAWS"
   }
 }
 
@@ -42,7 +43,7 @@ resource "aws_subnet" "workshopPublicSubnet" {
   vpc_id     = "${aws_vpc.workshopvpc.id}"
   cidr_block = "20.0.1.0/24"
   map_public_ip_on_launch = "true"
-  availability_zone = "ap-southeast-1a"
+  availability_zone = "eu-west-1"
   tags = {
     Name = "workshopPublicSubnet"
   }
@@ -53,7 +54,7 @@ resource "aws_subnet" "workshopPublicSubnet2" {
   vpc_id     = "${aws_vpc.workshopvpc.id}"
   cidr_block = "20.0.2.0/24"
   map_public_ip_on_launch = "true"
-  availability_zone = "ap-southeast-1b"
+  availability_zone = "eu-west-1"
   tags = {
     Name = "workshopPublicSubnet2"
   }
