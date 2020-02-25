@@ -246,7 +246,7 @@ resource "aws_db_subnet_group" "dbSubnetGroupTerraformTest" {
   subnet_ids = [aws_subnet.TerraformTestPublicSubnet.id,aws_subnet.TerraformTestPublicSubnet2.id]
 
   tags = {
-    Name = "dbSubnetGroupTerraformTest"
+    Name = "dbsubnetgroupterraformtest"
   }
 }
 
