@@ -20,21 +20,21 @@ terraform {
 
 
 //create VPC 
-resource "aws_vpc" "workshopvpc" {
+resource "aws_vpc" "TerraformTestVPC" {
   cidr_block       = "20.0.0.0/16"
   instance_tenancy = "default"
   enable_dns_hostnames = "true"
   tags = {
-    Name = "workshop-vpc"
+    Name = "TerraformTest-VPC"
   }
 }
 
 //create Internet Gateway
-resource "aws_internet_gateway" "igwWorkshop" {
-  vpc_id = aws_vpc.workshopvpc.id
+resource "aws_internet_gateway" "igwTerraformTest" {
+  vpc_id = aws_vpc.TerraformTestVPC.id
 
   tags = {
-    Name = "igwWorkshop"
+    Name = "igwTerraformTest"
   }
 }
 
@@ -42,57 +42,57 @@ resource "aws_internet_gateway" "igwWorkshop" {
 // https://github.com/terraform-providers/terraform-provider-aws/issues/3223
 
 //create public Subnet
-resource "aws_subnet" "workshopPublicSubnet" {
-  vpc_id     = aws_vpc.workshopvpc.id
+resource "aws_subnet" "TerraformTestPublicSubnet" {
+  vpc_id     = aws_vpc.TerraformTestVPC.id
   cidr_block = "20.0.1.0/24"
   map_public_ip_on_launch = "true"
   availability_zone = "eu-west-1a"
   tags = {
-    Name = "workshopPublicSubnet"
+    Name = "TerraformTestPublicSubnet"
   }
 }
 
 //create public Subnet for RDS
-resource "aws_subnet" "workshopPublicSubnet2" {
-  vpc_id     = aws_vpc.workshopvpc.id
+resource "aws_subnet" "TerraformTestPublicSubnet2" {
+  vpc_id     = aws_vpc.TerraformTestVPC.id
   cidr_block = "20.0.2.0/24"
   map_public_ip_on_launch = "true"
   availability_zone = "eu-west-1b"
   tags = {
-    Name = "workshopPublicSubnet2"
+    Name = "TerraformTestPublicSubnet2"
   }
 }
 
 //create Route Table with allocation to Internet Gateway
-resource "aws_route_table" "routeTableWorkshop" {
-  vpc_id = aws_vpc.workshopvpc.id
+resource "aws_route_table" "routeTableTerraformTest" {
+  vpc_id = aws_vpc.TerraformTestVPC.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igwWorkshop.id
+    gateway_id = aws_internet_gateway.igwTerraformTest.id
   }
 
   tags = {
-    Name = "routeTableWorkshop"
+    Name = "routeTableTerraformTest"
   }
 }
 
 //create association RouteTable to Subnet
 resource "aws_route_table_association" "aRouteTableSubnet" {
-  subnet_id      = aws_subnet.workshopPublicSubnet.id
-  route_table_id = aws_route_table.routeTableWorkshop.id
+  subnet_id      = aws_subnet.TerraformTestPublicSubnet.id
+  route_table_id = aws_route_table.routeTableTerraformTest.id
 }
 
 resource "aws_route_table_association" "aRouteTableSubnet2" {
-  subnet_id      = aws_subnet.workshopPublicSubnet2.id
-  route_table_id = aws_route_table.routeTableWorkshop.id
+  subnet_id      = aws_subnet.TerraformTestPublicSubnet2.id
+  route_table_id = aws_route_table.routeTableTerraformTest.id
 }
 
 //create Security Group Web + SSH
-resource "aws_security_group" "secGroupWorkshopWebSSH" {
-  name        = "secGroupWorkshopWebSSH"
+resource "aws_security_group" "secGroupTerraformTestWebSSH" {
+  name        = "secGroupTerraformTestWebSSH"
   description = "Allow TLS inbound traffic"
-  vpc_id      = aws_vpc.workshopvpc.id
+  vpc_id      = aws_vpc.TerraformTestVPC.id
   
   ingress {
     # TLS (change to whatever ports you need)
@@ -132,15 +132,15 @@ resource "aws_security_group" "secGroupWorkshopWebSSH" {
   }
 
   tags = {
-    Name = "secGroupWorkshopWebSSH"
+    Name = "secGroupTerraformTestWebSSH"
   }
 }
 
 //create security group access MYSQL
-resource "aws_security_group" "secGroupWorkshopMYSQL" {
-  name        = "secGroupWorkshopMYSQL"
+resource "aws_security_group" "secGroupTerraformTestMYSQL" {
+  name        = "secGroupTerraformTestMYSQL"
   description = "Allow TLS inbound traffic"
-  vpc_id      = aws_vpc.workshopvpc.id
+  vpc_id      = aws_vpc.TerraformTestVPC.id
   
   ingress {
     # TLS (change to whatever ports you need)
@@ -149,7 +149,7 @@ resource "aws_security_group" "secGroupWorkshopMYSQL" {
     protocol    = "tcp"
     # Please restrict your ingress to only necessary IPs and ports.
     # Opening to 0.0.0.0/0 can lead to security vulnerabilities.
-    security_groups = [aws_security_group.secGroupWorkshopWebSSH.id]
+    security_groups = [aws_security_group.secGroupTerraformTestWebSSH.id]
   }
 
   egress {
@@ -160,12 +160,12 @@ resource "aws_security_group" "secGroupWorkshopMYSQL" {
   }
 
   tags = {
-    Name = "secGroupWorkshopMYSQL"
+    Name = "secGroupTerraformTestMYSQL"
   }
 }
 
-/*resource "aws_iam_role" "roleWorkshop" {
-  name = "roleWorkshop"
+/*resource "aws_iam_role" "roleTerraformTest" {
+  name = "roleTerraformTest"
   //path = "/"
 
   assume_role_policy = <<-EOF
@@ -182,12 +182,12 @@ resource "aws_security_group" "secGroupWorkshopMYSQL" {
                         EOF
 }*/
 
-resource "aws_iam_instance_profile" "instanceProfileWorkshop" {
-  name = "instanceProfileWorkshop"
-  role = "Inventory-App-Role" # You Must create a role in your AWS account
+resource "aws_iam_instance_profile" "instanceProfileTerraformTest" {
+  name = "instanceProfileTerraformTest"
+  role = "Inventory-App-Role" # You Must create this role in your AWS account
 }
 
-//create EC2-ec2WorkshopWebApp user data local variable
+//create EC2-ec2TerraformTestWebApp user data local variable
 variable "userdataEC2" {
     type = string
     default  = <<-EOF
@@ -204,64 +204,64 @@ variable "userdataEC2" {
 }
 
 //create EC2 Apps
-resource "aws_instance" "ec2WorkshopWebApp" {
+resource "aws_instance" "ec2TerraformTestWebApp" {
     //aws AMI selection -- Amazon Linux 2
-  ami           = "ami-099a8245f5daa82bf"
+  ami = "ami-099a8245f5daa82bf"
 
     //aws EC2 instance type, t2.micro for free tier
   instance_type                 = "t2.micro"
   key_name                      = "testkeypair" # You must create this key pairs on your AWS
-  subnet_id                     = aws_subnet.workshopPublicSubnet.id
-  vpc_security_group_ids        = [aws_security_group.secGroupWorkshopWebSSH.id]
+  subnet_id                     = aws_subnet.TerraformTestPublicSubnet.id
+  vpc_security_group_ids        = [aws_security_group.secGroupTerraformTestWebSSH.id]
   //user_data_base64            = "${base64encode(var.userdataEC2)}"
   user_data                     = var.userdataEC2
-  iam_instance_profile          =  aws_iam_instance_profile.instanceProfileWorkshop.name
+  iam_instance_profile          =  aws_iam_instance_profile.instanceProfileTerraformTest.name
   tags = {
-    Name = "ec2WorkshopWebApp"
+    Name = "ec2TerraformTestWebApp"
   }
 }
 
 
-resource "aws_instance" "ec2WorkshopWebApp2" {
+resource "aws_instance" "ec2TerraformTestWebApp2" {
     //aws AMI selection -- Amazon Linux 2
-  ami           = "ami-099a8245f5daa82bf"
+  ami = "ami-099a8245f5daa82bf"
 
     //aws EC2 instance type, t2.micro for free tier
   instance_type                 = "t2.micro"
-  key_name                      = "testkeypair"
-  subnet_id                     = aws_subnet.workshopPublicSubnet.id
-  vpc_security_group_ids        = [aws_security_group.secGroupWorkshopWebSSH.id]
+  key_name                      = "testkeypair" # You must create this key pairs on your AWS
+  subnet_id                     = aws_subnet.TerraformTestPublicSubnet.id
+  vpc_security_group_ids        = [aws_security_group.secGroupTerraformTestWebSSH.id]
   //user_data_base64            = "${base64encode(var.userdataEC2)}"
   user_data                     = var.userdataEC2
-  iam_instance_profile          =  aws_iam_instance_profile.instanceProfileWorkshop.name
+  iam_instance_profile          =  aws_iam_instance_profile.instanceProfileTerraformTest.name
   tags = {
-    Name = "ec2WorkshopWebApp2"
+    Name = "ec2TerraformTestWebApp2"
   }
 }
 
 
 // create DB Subnet Group -- Subnet1+Subnet2
-resource "aws_db_subnet_group" "dbSubnetGroupWorkshop" {
-  name       = "dbsubnetgroupworkshop"
-  subnet_ids = [aws_subnet.workshopPublicSubnet.id,aws_subnet.workshopPublicSubnet2.id]
+resource "aws_db_subnet_group" "dbSubnetGroupTerraformTest" {
+  name       = "dbsubnetgroupterraformtest"
+  subnet_ids = [aws_subnet.TerraformTestPublicSubnet.id,aws_subnet.TerraformTestPublicSubnet2.id]
 
   tags = {
-    Name = "dbSubnetGroupWorkshop"
+    Name = "dbSubnetGroupTerraformTest"
   }
 }
 
 
-resource "aws_db_instance" "rdsWorkshop" {
+resource "aws_db_instance" "rdsTerraformTest" {
   allocated_storage         = 20
   storage_type              = "gp2"
   engine                    = "mysql"
   engine_version            = "5.7"
   instance_class            = "db.t2.micro"
-  name                      = "rdsWorkshop"
+  name                      = "rdsTerraformTest"
   username                  = "alevz"
   password                  = "Passw0rdDB"
-  vpc_security_group_ids    = [aws_security_group.secGroupWorkshopMYSQL.id]
-  db_subnet_group_name      = aws_db_subnet_group.dbSubnetGroupWorkshop.tags.Name
+  vpc_security_group_ids    = [aws_security_group.secGroupTerraformTestMYSQL.id]
+  db_subnet_group_name      = aws_db_subnet_group.dbSubnetGroupTerraformTest.tags.Name
   parameter_group_name      = "default.mysql5.7"
   //backup_retention_period   = 1
   //snapshot_identifier = "some-snap"
@@ -270,47 +270,47 @@ resource "aws_db_instance" "rdsWorkshop" {
   multi_az            = true
 }
 
-# resource "aws_db_instance" "rdsWorkshopReplica" {
+# resource "aws_db_instance" "rdsTerraformTestReplica" {
 #   allocated_storage         = 20
 #   storage_type              = "gp2"
 #   engine                    = "mysql"
 #   engine_version            = "5.7"
 #   instance_class            = "db.t2.micro"
-#   name                      = "rdsWorkshopReplica"
+#   name                      = "rdsTerraformTestReplica"
 #   username                  = "alevz"
 #   password                  = "Passw0rdDB"
-#   vpc_security_group_ids    = ["${aws_security_group.secGroupWorkshopMYSQL.id}"]
-#   db_subnet_group_name      = "${aws_db_subnet_group.dbSubnetGroupWorkshop.tags.Name}"
+#   vpc_security_group_ids    = ["${aws_security_group.secGroupTerraformTestMYSQL.id}"]
+#   db_subnet_group_name      = "${aws_db_subnet_group.dbSubnetGroupTerraformTest.tags.Name}"
 #   parameter_group_name      = "default.mysql5.7"
 #   //snapshot_identifier = "some-snap"
 #   skip_final_snapshot = true
 #   publicly_accessible = true
 #   #multi_az            = true
-#   replicate_source_db       = "${aws_db_instance.rdsWorkshop.id}"
+#   replicate_source_db       = "${aws_db_instance.rdsTerraformTest.id}"
 # }
 
 output "ip" {
-  value = aws_instance.ec2WorkshopWebApp.public_ip
+  value = aws_instance.ec2TerraformTestWebApp.public_ip
 }
 
 output "ip2" {
-  value = aws_instance.ec2WorkshopWebApp2.public_ip
+  value = aws_instance.ec2TerraformTestWebApp2.public_ip
 }
 
 output "ipDB"{
-    value = aws_db_instance.rdsWorkshop.address
+    value = aws_db_instance.rdsTerraformTest.address
 }
 
 # output "ipDBReplica"{
-#     value = "${aws_db_instance.rdsWorkshopReplica.address}"
+#     value = "${aws_db_instance.rdsTerraformTestReplica.address}"
 # }
 
 output "dns"{
-  value = aws_instance.ec2WorkshopWebApp.public_dns
+  value = aws_instance.ec2TerraformTestWebApp.public_dns
 }
 
 output "dns2"{
-  value = aws_instance.ec2WorkshopWebApp2.public_dns
+  value = aws_instance.ec2TerraformTestWebApp2.public_dns
 }
 
 output "userData"{
