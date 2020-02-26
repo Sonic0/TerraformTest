@@ -1,6 +1,7 @@
 # My First terraform test with AWS
  
- This is my first test to experiment with Terraform in order to create an infrastructure on AWS. 
+ This is my first test to experiment with Terraform in order to create an infrastructure on AWS.
+ I use my local laptop environment to actually deploy the terraform for AWS.
  
  You need to create some AWS resources, manually, before starting:
  - One SSH key pair
