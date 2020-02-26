@@ -1,7 +1,7 @@
 //create AWS provider 
 provider "aws" {
     //aws profile defined in aws cli
-  profile    = "personalAWS"
+    //profile    = "personalAWS" // Decomment this line to use this file locally
 
     //aws region selection
   region     = "eu-west-1"
@@ -11,10 +11,10 @@ provider "aws" {
 terraform {
   backend "s3"{
     bucket         = "terraform-bucket-sonic0" # Change it based on your preferences
-    region         = "eu-west-1"
     key            = "terraform-state/terraform.tfstate" # Change it based on your preferences
     dynamodb_table = "terraform_state_lock"
-    profile        = "personalAWS"
+    region         = "eu-west-1"
+      //profile        = "personalAWS"
   }
 }
 
